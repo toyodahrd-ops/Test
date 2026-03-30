@@ -1,1 +1,720 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>HSK1 词汇测验 | ทายคำศัพท์จีน</title>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;700;900&family=Sarabun:wght@300;400;600;700&family=Ma+Shan+Zheng&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --ink: #1a1008;
+      --paper: #fdf6e3;
+      --red: #c0392b;
+      --green: #1e7d4b;
+      --gold: #b8860b;
+      --gold-light: #f0c040;
+      --muted: #7a6a55;
+      --shadow: rgba(26,16,8,0.15);
+      --correct-bg: #d4edda;
+      --wrong-bg: #f8d7da;
+      --correct-border: #1e7d4b;
+      --wrong-border: #c0392b;
+    }
 
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background-color: #2b1a0e;
+      background-image:
+        radial-gradient(ellipse at 20% 20%, #3d2410 0%, transparent 60%),
+        radial-gradient(ellipse at 80% 80%, #1a0e05 0%, transparent 60%),
+        url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.02'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+      min-height: 100vh;
+      display: flex;
+      align-items: flex-start;
+      justify-content: center;
+      padding: 2rem 1rem 4rem;
+      font-family: 'Sarabun', sans-serif;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 680px;
+    }
+
+    /* Header */
+    .header {
+      text-align: center;
+      margin-bottom: 2rem;
+      animation: fadeDown 0.6s ease both;
+    }
+
+    .header .title-zh {
+      font-family: 'Ma Shan Zheng', cursive;
+      font-size: 2.8rem;
+      color: var(--gold-light);
+      text-shadow: 0 2px 12px rgba(240,192,64,0.4), 0 0 40px rgba(240,192,64,0.1);
+      letter-spacing: 0.1em;
+      line-height: 1;
+    }
+
+    .header .title-th {
+      font-size: 1rem;
+      color: #c9a96e;
+      letter-spacing: 0.12em;
+      margin-top: 0.4rem;
+      font-weight: 300;
+    }
+
+    .header .badge {
+      display: inline-block;
+      margin-top: 0.7rem;
+      background: linear-gradient(135deg, #8b0000, #c0392b);
+      color: #fff;
+      font-family: 'Noto Serif SC', serif;
+      font-size: 0.75rem;
+      padding: 0.25rem 0.9rem;
+      border-radius: 2px;
+      letter-spacing: 0.15em;
+      box-shadow: 0 2px 8px rgba(192,57,43,0.4);
+    }
+
+    /* Progress */
+    .progress-bar-wrap {
+      background: rgba(255,255,255,0.08);
+      border-radius: 4px;
+      height: 6px;
+      margin-bottom: 0.5rem;
+      overflow: hidden;
+    }
+
+    .progress-bar-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--gold), var(--gold-light));
+      border-radius: 4px;
+      transition: width 0.5s cubic-bezier(.4,0,.2,1);
+    }
+
+    .progress-label {
+      text-align: right;
+      font-size: 0.8rem;
+      color: #c9a96e;
+      margin-bottom: 1.5rem;
+    }
+
+    /* Card */
+    .card {
+      background: var(--paper);
+      border-radius: 6px;
+      padding: 2rem 2rem 1.6rem;
+      box-shadow: 0 8px 40px rgba(0,0,0,0.45), 0 2px 8px rgba(0,0,0,0.2);
+      position: relative;
+      overflow: hidden;
+      animation: slideUp 0.4s ease both;
+    }
+
+    .card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 4px;
+      background: linear-gradient(90deg, #8b0000, #c0392b, #e67e22, var(--gold-light));
+    }
+
+    .card-corner {
+      position: absolute;
+      font-family: 'Ma Shan Zheng', cursive;
+      font-size: 5rem;
+      color: rgba(184,134,11,0.06);
+      line-height: 1;
+      pointer-events: none;
+    }
+    .card-corner.tl { top: -0.5rem; left: 0.5rem; }
+    .card-corner.br { bottom: -1rem; right: 0.8rem; }
+
+    .question-meta {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1.2rem;
+    }
+
+    .q-number {
+      font-size: 0.78rem;
+      color: var(--muted);
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    .q-type-tag {
+      font-size: 0.72rem;
+      background: #ede0c8;
+      color: var(--gold);
+      padding: 0.18rem 0.6rem;
+      border-radius: 2px;
+      font-weight: 600;
+      letter-spacing: 0.06em;
+    }
+
+    .question-zh {
+      font-family: 'Noto Serif SC', serif;
+      font-size: 3.2rem;
+      font-weight: 900;
+      color: var(--ink);
+      text-align: center;
+      line-height: 1.1;
+      margin: 0.5rem 0 0.4rem;
+      letter-spacing: 0.05em;
+    }
+
+    .question-pinyin {
+      text-align: center;
+      font-size: 1rem;
+      color: #c0392b;
+      font-style: italic;
+      margin-bottom: 0.3rem;
+      letter-spacing: 0.05em;
+    }
+
+    .question-prompt {
+      text-align: center;
+      font-size: 0.88rem;
+      color: var(--muted);
+      margin-bottom: 1.6rem;
+    }
+
+    /* Options */
+    .options {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.75rem;
+    }
+
+    .option-btn {
+      background: #fff;
+      border: 2px solid #e0d4bc;
+      border-radius: 5px;
+      padding: 0.85rem 1rem;
+      cursor: pointer;
+      text-align: left;
+      transition: all 0.18s ease;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .option-btn:hover:not(:disabled) {
+      border-color: var(--gold);
+      background: #fffbf0;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(184,134,11,0.15);
+    }
+
+    .option-btn:active:not(:disabled) {
+      transform: translateY(0);
+    }
+
+    .option-label {
+      display: inline-block;
+      width: 1.4rem;
+      height: 1.4rem;
+      background: #ede0c8;
+      color: var(--gold);
+      font-size: 0.72rem;
+      font-weight: 700;
+      border-radius: 2px;
+      text-align: center;
+      line-height: 1.4rem;
+      margin-right: 0.5rem;
+      flex-shrink: 0;
+      transition: background 0.18s, color 0.18s;
+    }
+
+    .option-text {
+      font-size: 0.95rem;
+      color: var(--ink);
+      font-weight: 500;
+    }
+
+    .option-sub {
+      font-size: 0.78rem;
+      color: var(--muted);
+      margin-top: 0.15rem;
+      margin-left: 1.9rem;
+    }
+
+    /* Correct / Wrong states */
+    .option-btn.correct {
+      background: var(--correct-bg) !important;
+      border-color: var(--correct-border) !important;
+      animation: popIn 0.3s ease;
+    }
+    .option-btn.correct .option-label {
+      background: var(--green);
+      color: #fff;
+    }
+    .option-btn.correct .option-text {
+      color: var(--green);
+      font-weight: 700;
+    }
+
+    .option-btn.wrong {
+      background: var(--wrong-bg) !important;
+      border-color: var(--wrong-border) !important;
+      animation: shake 0.4s ease;
+    }
+    .option-btn.wrong .option-label {
+      background: var(--red);
+      color: #fff;
+    }
+    .option-btn.wrong .option-text {
+      color: var(--red);
+      font-weight: 700;
+    }
+
+    .option-btn.reveal-correct {
+      background: #e8f5ee !important;
+      border-color: var(--correct-border) !important;
+      border-style: dashed !important;
+    }
+    .option-btn.reveal-correct .option-label {
+      background: var(--green);
+      color: #fff;
+    }
+    .option-btn.reveal-correct .option-text {
+      color: var(--green);
+    }
+
+    .option-btn:disabled {
+      cursor: default;
+    }
+
+    /* Feedback */
+    .feedback {
+      margin-top: 1rem;
+      padding: 0.75rem 1rem;
+      border-radius: 4px;
+      font-size: 0.88rem;
+      font-weight: 600;
+      display: none;
+      align-items: center;
+      gap: 0.5rem;
+      animation: fadeUp 0.25s ease;
+    }
+    .feedback.show { display: flex; }
+    .feedback.correct-fb {
+      background: #d4edda;
+      color: var(--green);
+      border-left: 4px solid var(--green);
+    }
+    .feedback.wrong-fb {
+      background: #f8d7da;
+      color: var(--red);
+      border-left: 4px solid var(--red);
+    }
+    .feedback-icon { font-size: 1.1rem; }
+
+    /* Next button */
+    .btn-next {
+      display: block;
+      width: 100%;
+      margin-top: 1.2rem;
+      padding: 0.85rem;
+      background: linear-gradient(135deg, #8b0000, #c0392b);
+      color: #fff;
+      border: none;
+      border-radius: 5px;
+      font-family: 'Sarabun', sans-serif;
+      font-size: 0.95rem;
+      font-weight: 600;
+      letter-spacing: 0.06em;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      box-shadow: 0 4px 12px rgba(192,57,43,0.3);
+      display: none;
+    }
+    .btn-next:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 18px rgba(192,57,43,0.4);
+    }
+    .btn-next.show { display: block; }
+
+    /* Score screen */
+    .score-screen {
+      background: var(--paper);
+      border-radius: 6px;
+      padding: 3rem 2rem;
+      text-align: center;
+      box-shadow: 0 8px 40px rgba(0,0,0,0.45);
+      display: none;
+      animation: slideUp 0.5s ease both;
+    }
+    .score-screen.show { display: block; }
+
+    .score-zh {
+      font-family: 'Ma Shan Zheng', cursive;
+      font-size: 1.4rem;
+      color: var(--gold);
+      margin-bottom: 0.5rem;
+      letter-spacing: 0.2em;
+    }
+
+    .score-number {
+      font-family: 'Noto Serif SC', serif;
+      font-size: 5rem;
+      font-weight: 900;
+      color: var(--ink);
+      line-height: 1;
+    }
+    .score-number span {
+      font-size: 2rem;
+      color: var(--muted);
+    }
+
+    .score-label {
+      font-size: 1rem;
+      color: var(--muted);
+      margin-top: 0.4rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .score-grade {
+      display: inline-block;
+      padding: 0.4rem 1.5rem;
+      border-radius: 3px;
+      font-size: 1.1rem;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      margin-bottom: 2rem;
+    }
+    .grade-excellent { background: #d4edda; color: var(--green); }
+    .grade-good { background: #d1ecf1; color: #0c5460; }
+    .grade-ok { background: #fff3cd; color: #856404; }
+    .grade-retry { background: #f8d7da; color: var(--red); }
+
+    .btn-restart {
+      display: inline-block;
+      padding: 0.75rem 2.5rem;
+      background: linear-gradient(135deg, #8b0000, #c0392b);
+      color: #fff;
+      border: none;
+      border-radius: 5px;
+      font-family: 'Sarabun', sans-serif;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      letter-spacing: 0.06em;
+      box-shadow: 0 4px 12px rgba(192,57,43,0.3);
+      transition: all 0.2s ease;
+    }
+    .btn-restart:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 18px rgba(192,57,43,0.4);
+    }
+
+    /* Divider */
+    .ornament {
+      text-align: center;
+      color: #c9a96e;
+      font-size: 1rem;
+      letter-spacing: 0.5em;
+      margin: 1.2rem 0 0;
+      opacity: 0.5;
+    }
+
+    /* Animations */
+    @keyframes fadeDown {
+      from { opacity: 0; transform: translateY(-16px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes slideUp {
+      from { opacity: 0; transform: translateY(20px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(6px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes popIn {
+      0%   { transform: scale(1); }
+      50%  { transform: scale(1.03); }
+      100% { transform: scale(1); }
+    }
+    @keyframes shake {
+      0%,100% { transform: translateX(0); }
+      20%     { transform: translateX(-5px); }
+      40%     { transform: translateX(5px); }
+      60%     { transform: translateX(-4px); }
+      80%     { transform: translateX(4px); }
+    }
+
+    @media (max-width: 480px) {
+      .options { grid-template-columns: 1fr; }
+      .question-zh { font-size: 2.4rem; }
+      .card { padding: 1.5rem 1.2rem 1.2rem; }
+    }
+  </style>
+</head>
+<body>
+<div class="container">
+
+  <div class="header">
+    <div class="title-zh">汉语词汇测验</div>
+    <div class="title-th">ทายคำศัพท์ภาษาจีน</div>
+    <div class="badge">HSK 1 · 10 ข้อ</div>
+  </div>
+
+  <div class="progress-bar-wrap">
+    <div class="progress-bar-fill" id="progressFill" style="width:0%"></div>
+  </div>
+  <div class="progress-label" id="progressLabel">0 / 10</div>
+
+  <!-- Quiz Card -->
+  <div class="card" id="quizCard">
+    <div class="card-corner tl" id="cornerTL"></div>
+    <div class="card-corner br" id="cornerBR"></div>
+
+    <div class="question-meta">
+      <span class="q-number" id="qNumber">ข้อที่ 1 / 10</span>
+      <span class="q-type-tag" id="qTypeTag">คำนาม</span>
+    </div>
+
+    <div class="question-zh" id="questionZH">你好</div>
+    <div class="question-pinyin" id="questionPinyin">nǐ hǎo</div>
+    <div class="question-prompt">คำศัพท์ภาษาจีนด้านบนแปลว่าอะไร?</div>
+
+    <div class="options" id="optionsContainer"></div>
+
+    <div class="feedback" id="feedback">
+      <span class="feedback-icon" id="feedbackIcon"></span>
+      <span id="feedbackText"></span>
+    </div>
+
+    <button class="btn-next" id="btnNext" onclick="nextQuestion()">ถัดไป →</button>
+    <div class="ornament">❧ ✦ ❧</div>
+  </div>
+
+  <!-- Score Screen -->
+  <div class="score-screen" id="scoreScreen">
+    <div class="score-zh">测验完成</div>
+    <div class="score-number" id="scoreNumber">0<span>/10</span></div>
+    <div class="score-label">คะแนนที่ได้</div>
+    <div class="score-grade" id="scoreGrade"></div>
+    <br/>
+    <button class="btn-restart" onclick="restartQuiz()">🔄 เริ่มใหม่อีกครั้ง</button>
+  </div>
+
+</div>
+
+<script>
+  const allQuestions = [
+    {
+      zh: "你好", pinyin: "nǐ hǎo", type: "ทักทาย",
+      answer: "สวัสดี",
+      options: ["ขอบคุณ", "สวัสดี", "ลาก่อน", "ขอโทษ"],
+      corner: ["好","你"]
+    },
+    {
+      zh: "谢谢", pinyin: "xiè xiè", type: "ทักทาย",
+      answer: "ขอบคุณ",
+      options: ["สวัสดี", "ใช่", "ขอบคุณ", "ไม่เป็นไร"],
+      corner: ["谢","谢"]
+    },
+    {
+      zh: "水", pinyin: "shuǐ", type: "คำนาม",
+      answer: "น้ำ",
+      options: ["ข้าว", "น้ำ", "นม", "ชา"],
+      corner: ["水","氵"]
+    },
+    {
+      zh: "老师", pinyin: "lǎo shī", type: "คำนาม",
+      answer: "ครู / อาจารย์",
+      options: ["นักเรียน", "แพทย์", "ครู / อาจารย์", "เพื่อน"],
+      corner: ["师","老"]
+    },
+    {
+      zh: "今天", pinyin: "jīn tiān", type: "คำนาม",
+      answer: "วันนี้",
+      options: ["เมื่อวาน", "พรุ่งนี้", "อาทิตย์", "วันนี้"],
+      corner: ["今","天"]
+    },
+    {
+      zh: "大", pinyin: "dà", type: "คำคุณศัพท์",
+      answer: "ใหญ่",
+      options: ["เล็ก", "สูง", "ใหญ่", "หนัก"],
+      corner: ["大","小"]
+    },
+    {
+      zh: "吃", pinyin: "chī", type: "คำกริยา",
+      answer: "กิน",
+      options: ["ดื่ม", "นอน", "กิน", "วิ่ง"],
+      corner: ["吃","口"]
+    },
+    {
+      zh: "书", pinyin: "shū", type: "คำนาม",
+      answer: "หนังสือ",
+      options: ["ปากกา", "โต๊ะ", "กระเป๋า", "หนังสือ"],
+      corner: ["书","文"]
+    },
+    {
+      zh: "月", pinyin: "yuè", type: "คำนาม",
+      answer: "เดือน / พระจันทร์",
+      options: ["ดวงอาทิตย์", "ดาว", "เดือน / พระจันทร์", "ท้องฟ้า"],
+      corner: ["月","日"]
+    },
+    {
+      zh: "朋友", pinyin: "péng yǒu", type: "คำนาม",
+      answer: "เพื่อน",
+      options: ["ครอบครัว", "เพื่อน", "พี่น้อง", "เพื่อนบ้าน"],
+      corner: ["友","朋"]
+    }
+  ];
+
+  // Shuffle questions
+  function shuffle(arr) {
+    const a = [...arr];
+    for (let i = a.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [a[i], a[j]] = [a[j], a[i]];
+    }
+    return a;
+  }
+
+  let questions = [];
+  let current = 0;
+  let score = 0;
+  let answered = false;
+
+  const labels = ['A', 'B', 'C', 'D'];
+
+  function init() {
+    questions = shuffle(allQuestions);
+    current = 0;
+    score = 0;
+    answered = false;
+    document.getElementById('quizCard').style.display = 'block';
+    document.getElementById('scoreScreen').classList.remove('show');
+    renderQuestion();
+  }
+
+  function renderQuestion() {
+    answered = false;
+    const q = questions[current];
+    const total = questions.length;
+
+    // Progress
+    document.getElementById('progressFill').style.width = ((current / total) * 100) + '%';
+    document.getElementById('progressLabel').textContent = `${current} / ${total}`;
+    document.getElementById('qNumber').textContent = `ข้อที่ ${current + 1} / ${total}`;
+    document.getElementById('qTypeTag').textContent = q.type;
+    document.getElementById('questionZH').textContent = q.zh;
+    document.getElementById('questionPinyin').textContent = q.pinyin;
+    document.getElementById('cornerTL').textContent = q.corner[0];
+    document.getElementById('cornerBR').textContent = q.corner[1];
+
+    // Shuffle options
+    const opts = shuffle(q.options);
+    const container = document.getElementById('optionsContainer');
+    container.innerHTML = '';
+
+    opts.forEach((opt, i) => {
+      const btn = document.createElement('button');
+      btn.className = 'option-btn';
+      btn.innerHTML = `
+        <span class="option-label">${labels[i]}</span>
+        <span class="option-text">${opt}</span>
+      `;
+      btn.addEventListener('click', () => selectAnswer(btn, opt, q.answer, opts));
+      container.appendChild(btn);
+    });
+
+    // Hide feedback + next
+    const fb = document.getElementById('feedback');
+    fb.className = 'feedback';
+    document.getElementById('btnNext').classList.remove('show');
+
+    // Re-animate card
+    const card = document.getElementById('quizCard');
+    card.style.animation = 'none';
+    card.offsetHeight;
+    card.style.animation = 'slideUp 0.35s ease both';
+  }
+
+  function selectAnswer(btn, selected, correct, opts) {
+    if (answered) return;
+    answered = true;
+
+    const allBtns = document.querySelectorAll('.option-btn');
+    allBtns.forEach(b => b.disabled = true);
+
+    const fb = document.getElementById('feedback');
+    const fbText = document.getElementById('feedbackText');
+    const fbIcon = document.getElementById('feedbackIcon');
+
+    if (selected === correct) {
+      score++;
+      btn.classList.add('correct');
+      fb.className = 'feedback correct-fb show';
+      fbIcon.textContent = '✅';
+      fbText.textContent = 'ถูกต้อง! เยี่ยมมาก 太棒了！';
+    } else {
+      btn.classList.add('wrong');
+      fb.className = 'feedback wrong-fb show';
+      fbIcon.textContent = '❌';
+      fbText.textContent = `ผิด! คำตอบที่ถูกคือ: "${correct}"`;
+
+      // Reveal correct answer
+      allBtns.forEach(b => {
+        const txt = b.querySelector('.option-text').textContent;
+        if (txt === correct) {
+          b.classList.add('reveal-correct');
+        }
+      });
+    }
+
+    document.getElementById('btnNext').classList.add('show');
+  }
+
+  function nextQuestion() {
+    current++;
+    if (current >= questions.length) {
+      showScore();
+    } else {
+      renderQuestion();
+    }
+  }
+
+  function showScore() {
+    document.getElementById('progressFill').style.width = '100%';
+    document.getElementById('progressLabel').textContent = `10 / 10`;
+    document.getElementById('quizCard').style.display = 'none';
+
+    const ss = document.getElementById('scoreScreen');
+    ss.classList.add('show');
+    document.getElementById('scoreNumber').innerHTML = `${score}<span>/10</span>`;
+
+    const grade = document.getElementById('scoreGrade');
+    if (score === 10) {
+      grade.textContent = '🏆 ยอดเยี่ยม! 满分！';
+      grade.className = 'score-grade grade-excellent';
+    } else if (score >= 7) {
+      grade.textContent = '👍 ดีมาก! 很好！';
+      grade.className = 'score-grade grade-good';
+    } else if (score >= 5) {
+      grade.textContent = '📚 พอใช้ได้ 加油！';
+      grade.className = 'score-grade grade-ok';
+    } else {
+      grade.textContent = '💪 ต้องฝึกเพิ่มอีกนะ 继续努力！';
+      grade.className = 'score-grade grade-retry';
+    }
+  }
+
+  function restartQuiz() {
+    init();
+  }
+
+  // Start
+  init();
+</script>
+</body>
+</html>
